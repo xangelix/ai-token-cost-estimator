@@ -5,13 +5,15 @@ edition = "2024"
 description = "AI Token & Cost Estimator: A desktop and web tokenizer visualization tool supporting any HuggingFace tokenizer.json"
 license = "MIT"
 
+[package.metadata.cargo-shear]
+ignored = ["getrandom3"]
+
 [dependencies]
 egui = "0.35"
 eframe = "0.35"
 tokenizers = { version = "0.23.1", default-features = false, features = [
     "fancy-regex",
 ] }
-serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 egui-async = "0.5.0"
 reqwest = { version = "0.13.4", features = ["json"] }

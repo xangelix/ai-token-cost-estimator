@@ -172,7 +172,6 @@ dependencies = [
  "include_packed",
  "log",
  "reqwest",
- "serde",
  "serde_json",
  "tokenizers",
  "tokio_with_wasm",
