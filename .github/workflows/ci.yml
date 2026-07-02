@@ -192,6 +192,7 @@ jobs:
       options: --user root # How I wish this were GitLab
     env:
       CARGO_HOME: /home/tux/.cargo
+      RUSTUP_HOME: /home/tux/.rustup
 
     steps:
       - name: Checkout Source Code
