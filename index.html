@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>AI Token & Cost Estimator - Online Tokenizer</title>
+    <link rel="icon" type="image/png" href="./favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AI Token & Cost Estimator is a powerful tool to visualize LLM tokenization and calculate API costs. Supports custom HuggingFace tokenizer.json configs, LLaMA, cl100k_base, and more.">
+    <meta name="keywords" content="AI Token Cost Estimator, LLM cost calculator, token count, HuggingFace tokenizer visualizer, subword segments, cl100k_base, tokenization debugger">
+    <meta name="author" content="Cody">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AI Token & Cost Estimator - Online Tokenizer">
+    <meta property="og:description" content="Visualize tokenizer segmentation and compute LLM prompt/completion costs instantly using any HuggingFace config.">
+    <meta property="og:image" content="./favicon.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="AI Token & Cost Estimator">
+    <meta property="twitter:description" content="Visualize LLM tokenizer details and estimate prompt/completion costs using HuggingFace tokenizer.json configs.">
+    <meta property="twitter:image" content="./favicon.png">
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        /* Make canvas fill the entire screen */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #loading-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: sans-serif;
+            font-size: 18px;
+            color: #999;
+        }
+
+        /* Fully accessible semantic content for SEO crawlers and screen readers */
+        .reader-description {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Accessibility / SEO Content -->
+    <main class="reader-description">
+        <h1>AI Token & Cost Estimator</h1>
+        <p>Welcome to the AI Token & Cost Estimator, an advanced playground to estimate, analyze, and debug LLM tokens and API consumption costs.</p>
+        
+        <section aria-labelledby="features-heading">
+            <h2 id="features-heading">Features</h2>
+            <ul>
+                <li><strong>Interactive Tokenizer Visualizer</strong>: Supports cl100k_base, LLaMA, and any custom HuggingFace <code>tokenizer.json</code> config.</li>
+                <li><strong>Cost Estimations</strong>: Calculate prompt and completion token counts and pricing dynamically.</li>
+                <li><strong>Cross-Platform</strong>: Runs natively on Linux, Windows, macOS, and in-browser via WebAssembly.</li>
+            </ul>
+        </section>
+
+        <section aria-labelledby="tech-heading">
+            <h2 id="tech-heading">Technology Stack</h2>
+            <p>Powered by Rust, egui, wasm-bindgen, and HuggingFace tokenizers.</p>
+        </section>
+    </main>
+
+    <div id="loading-text">Loading WebAssembly...</div>
+    <canvas id="the_canvas_id"></canvas>
+
+    <script type="module">
+        import init from './ai_token_cost_estimator.js';
+
+        async function main() {
+            try {
+                await init();
+                
+                const loading = document.getElementById('loading-text');
+                if (loading) {
+                    loading.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                const loading = document.getElementById('loading-text');
+                if (loading) {
+                    loading.textContent = 'Error: Failed to load WebAssembly.';
+                    loading.style.color = '#ff6b6b';
+                }
+            }
+        }
+
+        main();
+    </script>
+</body>
+
+</html>

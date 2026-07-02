@@ -1,0 +1,201 @@
+name: Package Production Release Binaries
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Package Linux Production
+    runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/xangelix-pub/containers/arch-rust-nightly-pin-common:latest
+      options: --user root # How I wish this were GitLab
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Cache dependencies
+        uses: swatinem/rust-cache@v2
+
+      - name: Compile optimized release binary
+        run: cargo build --release
+
+      - name: Stage Artifact
+        run: |
+          mkdir -p staging
+          cp target/release/ai-token-cost-estimator staging/ai-token-cost-estimator-linux-x86_64
+
+      - name: Store Production Binary as Private Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-token-cost-estimator-linux-x86_64
+          path: staging/ai-token-cost-estimator-linux-x86_64
+
+      # - name: Upload Asset to GitHub Release
+      #   uses: softprops/action-gh-release@v3
+      #   with:
+      #     files: staging/ai-token-cost-estimator-linux-x86_64
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Package Windows Production (Inno Setup)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-06-15
+          target: x86_64-pc-windows-msvc
+
+      - name: Cache dependencies
+        uses: swatinem/rust-cache@v2
+
+      - name: Compile optimized release binary
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Restructure Build Path
+        run: |
+          mkdir -Force target\release
+          cp -Force target\x86_64-pc-windows-msvc\release\ai-token-cost-estimator.exe target\release\ai-token-cost-estimator.exe
+
+      - name: Compile Inno Setup Installer
+        shell: powershell
+        run: |
+          # 1. Extract the version string from Cargo.toml
+          $version = (Select-String -Path Cargo.toml -Pattern '^version\s*=\s*"(.*?)"').Matches.Groups[1].Value
+          echo "Detected Cargo Version: $version"
+
+          # 2. Compile passing the version dynamically
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=$version installer.iss
+
+      - name: Prepare Portable ZIP
+        run: |
+          compress-archive -Path target\release\ai-token-cost-estimator.exe -DestinationPath staging\ai-token-cost-estimator-windows-portable-x86_64.zip
+
+      - name: Store Portable ZIP as Private Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-token-cost-estimator-windows-portable-x86_64.zip
+          path: staging\ai-token-cost-estimator-windows-portable-x86_64.zip
+
+      - name: Store Production Installer as Private Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-token-cost-estimator-setup-x86_64.exe
+          path: staging\ai-token-cost-estimator-setup-x86_64.exe
+
+      # - name: Upload Portable ZIP to GitHub Release
+      #   uses: softprops/action-gh-release@v3
+      #   with:
+      #     files: staging/ai-token-cost-estimator-windows-portable-x86_64.zip
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #
+      # - name: Upload Installer to GitHub Release
+      #   uses: softprops/action-gh-release@v3
+      #   with:
+      #     files: staging/ai-token-cost-estimator-setup-x86_64.exe
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    name: Package macOS Production
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [aarch64-apple-darwin, x86_64-apple-darwin]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2026-06-15
+          targets: ${{ matrix.target }}
+
+      - name: Cache dependencies
+        uses: swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Compile optimized release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Stage Artifact
+        run: |
+          mkdir -p staging
+          cp target/${{ matrix.target }}/release/ai-token-cost-estimator staging/ai-token-cost-estimator-macos-${{ matrix.target }}
+
+      - name: Store macOS Package as Private Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-token-cost-estimator-macos-${{ matrix.target }}
+          path: staging/ai-token-cost-estimator-macos-${{ matrix.target }}
+
+      # - name: Upload Asset to GitHub Release
+      #   uses: softprops/action-gh-release@v3
+      #   with:
+      #     files: staging/ai-token-cost-estimator-macos-${{ matrix.target }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-wasm32:
+    name: Package WASM32 Production
+    runs-on: ubuntu-latest
+    container:
+      image: registry.gitlab.com/xangelix-pub/containers/arch-rust-nightly-pin-common:latest
+      options: --user root # How I wish this were GitLab
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v7
+
+      - name: Cache dependencies
+        uses: swatinem/rust-cache@v2
+
+      - name: Add WASM target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-bindgen-cli
+        run: |
+          if ! command -v wasm-bindgen &> /dev/null; then
+            echo "wasm-bindgen not found, installing..."
+            pacman -Syu --noconfirm wasm-bindgen
+          fi
+
+      - name: Compile optimized WASM binary and package
+        run: |
+          cargo build --release --bin ai-token-cost-estimator --target wasm32-unknown-unknown
+          rm -rf out
+          mkdir -p out
+          wasm-bindgen --no-typescript --target web --out-dir ./out/ --out-name "ai_token_cost_estimator" ./target/wasm32-unknown-unknown/release/ai-token-cost-estimator.wasm
+          wasm-opt --enable-bulk-memory --enable-threads --enable-nontrapping-float-to-int --enable-simd --enable-multivalue -O4 -ol 100 -s 100 -o out/output.wasm out/ai_token_cost_estimator_bg.wasm && mv out/output.wasm out/ai_token_cost_estimator_bg.wasm || echo "wasm-opt not found or failed, skipping optimization"
+          cp index.html out/index.html
+          cp _headers out/_headers
+          cp favicon.png out/favicon.png
+          cd out && zip -r ../ai-token-cost-estimator-wasm.zip *
+
+      - name: Store WASM Release Package as Private Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ai-token-cost-estimator-wasm.zip
+          path: ai-token-cost-estimator-wasm.zip
+
+      # - name: Upload Asset to GitHub Release
+      #   uses: softprops/action-gh-release@v3
+      #   with:
+      #     files: ai-token-cost-estimator-wasm.zip
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
