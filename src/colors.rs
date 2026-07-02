@@ -10,17 +10,31 @@ pub struct TokenColor {
     pub label_bg: Color32,
 }
 
-pub fn color_for_token(token_id: u32) -> TokenColor {
+pub fn color_for_token(token_id: u32, is_dark: bool) -> TokenColor {
     let hue = (token_id as f32 * 55.0) % 360.0;
     let h = hue / 360.0;
-    let (r, g, b) = hsl_to_rgb(h, 0.9, 0.6);
+    let (r, g, b) = if is_dark {
+        hsl_to_rgb(h, 0.60, 0.55)
+    } else {
+        hsl_to_rgb(h, 0.60, 0.60)
+    };
 
-    TokenColor {
-        bg: Color32::from_rgba_unmultiplied(r, g, b, 51), // 0.2 alpha
-        bg_emphasis: Color32::from_rgba_unmultiplied(r, g, b, 153), // 0.6 alpha
-        border: Color32::from_rgba_unmultiplied(r, g, b, 89),
-        text: Color32::from_rgb(15, 23, 42), // slate-900
-        label_bg: Color32::from_rgb(r, g, b),
+    if is_dark {
+        TokenColor {
+            bg: Color32::from_rgba_unmultiplied(r, g, b, 76), // 0.30 alpha
+            bg_emphasis: Color32::from_rgba_unmultiplied(r, g, b, 166), // 0.65 alpha
+            border: Color32::from_rgba_unmultiplied(r, g, b, 115), // 0.45 alpha
+            text: Color32::from_rgb(241, 245, 249), // slate-100
+            label_bg: Color32::from_rgb(r, g, b),
+        }
+    } else {
+        TokenColor {
+            bg: Color32::from_rgba_unmultiplied(r, g, b, 64), // 0.25 alpha
+            bg_emphasis: Color32::from_rgba_unmultiplied(r, g, b, 153), // 0.60 alpha
+            border: Color32::from_rgba_unmultiplied(r, g, b, 102), // 0.40 alpha
+            text: Color32::from_rgb(9, 9, 11), // slate-950
+            label_bg: Color32::from_rgb(r, g, b),
+        }
     }
 }
 

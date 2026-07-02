@@ -478,7 +478,7 @@ fn render_token_view(
                         for &chip_idx in vis_row {
                             let chip = &chip_infos[chip_idx];
                             let segment = &segments[chip.segment_idx];
-                            let color = colors::color_for_token(segment.id);
+                            let color = colors::color_for_token(segment.id, ui.visuals().dark_mode);
 
                             let button = egui::Button::new(
                                 RichText::new(&chip.display_text)
