@@ -24,7 +24,7 @@ pub fn color_for_token(token_id: u32, is_dark: bool) -> TokenColor {
             bg: Color32::from_rgba_unmultiplied(r, g, b, 76), // 0.30 alpha
             bg_emphasis: Color32::from_rgba_unmultiplied(r, g, b, 166), // 0.65 alpha
             border: Color32::from_rgba_unmultiplied(r, g, b, 115), // 0.45 alpha
-            text: Color32::from_rgb(241, 245, 249), // slate-100
+            text: Color32::from_rgb(241, 245, 249),           // slate-100
             label_bg: Color32::from_rgb(r, g, b),
         }
     } else {
@@ -32,7 +32,7 @@ pub fn color_for_token(token_id: u32, is_dark: bool) -> TokenColor {
             bg: Color32::from_rgba_unmultiplied(r, g, b, 64), // 0.25 alpha
             bg_emphasis: Color32::from_rgba_unmultiplied(r, g, b, 153), // 0.60 alpha
             border: Color32::from_rgba_unmultiplied(r, g, b, 102), // 0.40 alpha
-            text: Color32::from_rgb(9, 9, 11), // slate-950
+            text: Color32::from_rgb(9, 9, 11),                // slate-950
             label_bg: Color32::from_rgb(r, g, b),
         }
     }
