@@ -1,0 +1,18 @@
+compatibility_date = "2025-08-26"
+
+# Disable public workers.dev URL
+workers_dev = false
+# Disable auto-generated preview URLs for extra paranoia.
+preview_urls = false
+
+[assets]
+directory = "./out"
+not_found_handling = "404-page"
+
+# --- Production (main) ---
+[env.prod]
+name = "ai-token-cost-estimator"
+
+[[env.prod.routes]]
+pattern = "ai-token-cost-estimator.cody.to"
+custom_domain = true
