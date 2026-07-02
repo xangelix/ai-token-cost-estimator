@@ -190,6 +190,8 @@ jobs:
     container:
       image: registry.gitlab.com/xangelix-pub/containers/arch-rust-nightly-pin-common:latest
       options: --user root # How I wish this were GitLab
+    env:
+      CARGO_HOME: /home/tux/.cargo
 
     steps:
       - name: Checkout Source Code
